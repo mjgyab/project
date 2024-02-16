@@ -1,1 +1,132 @@
-# 
+mport pandas as pd
+import matplotlib as mlt
+import matplotlib.pyplot as plt
+import seaborn as sns
+import numpy as np
+import matplotlib.patches as mpatches
+from sklearn import linear_model
+import statsmodels.api as sm
+sns.set_theme()
+
+data = pd.read_csv('Covid-19 Vaccinations.csv')
+
+refined_data_2023 = data.iloc[0:1216,0:30]
+
+finished_data_2023 = refined_data_2023.groupby(['Location'])[['Distributed','Distributed_Janssen','Distributed_Moderna','Distributed_Pfizer','Distributed_Novavax','Distributed_Unk_Manuf','Dist_Per_100K','Administered_5Plus','Administered_12Plus','Administered_18Plus','Administered_65Plus','Administered_Janssen','Administered_Moderna','Administered_Pfizer','Administered_Novavax','Administered_Unk_Manuf','Admin_Per_100K','Admin_Per_100k_5Plus','Admin_Per_100k_12Plus','Admin_Per_100k_18Plus','Admin_Per_100k_65Plus']].sum()
+
+finished_data_2023.to_csv('finished.csv')
+
+#DATA ANALYSIS START
+#Firts Plot below
+analysis = pd.read_csv('finished.csv')
+Distribution_analysis = analysis.sort_values('Distributed', ascending=False)
+
+f, ax = plt.subplots(figsize=(23, 17))
+sns.set_color_codes("pastel")
+
+#adding the data to the bar plot
+sns.barplot(x="Distributed", y="Location", data = Distribution_analysis, label="Total", color="b",log=True,)
+sns.barplot(x="Administered_5Plus", y="Location", data = Distribution_analysis, label="Total", color="r",log=True,)
+
+#setting axis data
+ax.bar_label(ax.containers[0], label_type='edge',labels=analysis['Distributed'])
+ax.bar_label(ax.containers[0], label_type='center',labels=analysis['Administered_5Plus'])
+
+#Changing the colors for the bars
+red_patch = mpatches.Patch(color='red', label='Vaccine administered ages 5+')
+blue_patch = mpatches.Patch(color='blue', label='Total Vaccine distribuited')
+
+#adding legend, axis title, and title
+plt.legend(handles=[red_patch,blue_patch])
+ax.set(xlabel='Administered', ylabel='Location')
+plt.title('January - may 2023 vaccine distribution and administration for ages 5+')
+plt.savefig('Adminitered_5+_analysis.png')
+
+#Second Plot below
+f, ax = plt.subplots(figsize=(23, 17))
+sns.set_color_codes("pastel")
+
+#Adding data to the bar plot
+sns.barplot(x="Distributed", y="Location", data = Distribution_analysis, label="Total", color="b",log=True,)
+sns.barplot(x="Administered_12Plus", y="Location", data = Distribution_analysis, label="Total", color="g",log=True,)
+
+#Setting axis data
+ax.bar_label(ax.containers[0], label_type='edge',labels=analysis['Distributed'])
+ax.bar_label(ax.containers[0], label_type='center',labels=analysis['Administered_12Plus'])
+
+
+green_patch = mpatches.Patch(color='green', label='Vaccine administered ages 12+')
+blue_patch = mpatches.Patch(color='blue', label='Total Vaccine distribuited')
+
+
+plt.legend(handles=[green_patch,blue_patch])
+ax.set(xlabel='Administered', ylabel='Location')
+plt.title('January - may 2023 vaccine distribution and administration for ages 12+')
+plt.savefig('Adminitered_12+_analysis.png')
+
+#third plot below
+f, ax = plt.subplots(figsize=(23, 17))
+sns.set_color_codes("pastel")
+
+
+sns.barplot(x="Distributed", y="Location", data = Distribution_analysis, label="Total", color="b",log=True,)
+sns.barplot(x="Administered_18Plus", y="Location", data = Distribution_analysis, label="Total", color="m",log=True,)
+
+
+ax.bar_label(ax.containers[0], label_type='edge',labels=analysis['Distributed'])
+ax.bar_label(ax.containers[0], label_type='center',labels=analysis['Administered_18Plus'])
+
+
+magenta_patch = mpatches.Patch(color='magenta', label='Vaccine administered ages 18+')
+blue_patch = mpatches.Patch(color='blue', label='Total Vaccine distribuited')
+
+
+plt.legend(handles=[magenta_patch,blue_patch])
+ax.set(xlabel='Administered', ylabel='Location')
+plt.title('January - may 2023 vaccine distribution and administration for ages 18+')
+plt.savefig('Adminitered_18+_analysis.png')
+
+#4th plot below
+
+f, ax = plt.subplots(figsize=(23, 17))
+sns.set_color_codes("pastel")
+
+
+sns.barplot(x="Distributed", y="Location", data = Distribution_analysis, label="Total", color="b",log=True,)
+sns.barplot(x="Administered_65Plus", y="Location", data = Distribution_analysis, label="Total", color="y",log=True,)
+
+
+ax.bar_label(ax.containers[0], label_type='edge',labels=analysis['Distributed'])
+ax.bar_label(ax.containers[0], label_type='center',labels=analysis['Administered_65Plus'])
+
+
+yellow_patch = mpatches.Patch(color='yellow', label='Vaccine administered ages 65+')
+blue_patch = mpatches.Patch(color='blue', label='Total Vaccine distribuited')
+
+
+plt.legend(handles=[yellow_patch,blue_patch])
+ax.set(xlabel='Administered', ylabel='Location')
+plt.title('January - may 2023 vaccine distribution and administration for ages 65+')
+plt.savefig('Adminitered_65+_analysis.png')
+
+#MULTIPLE LINEAR REGRESSION ANALYSIS BELOW
+
+x = analysis[['Administered_5Plus','Administered_12Plus','Administered_18Plus','Administered_65Plus']]
+y = analysis['Distributed']
+ 
+
+regr = linear_model.LinearRegression()
+regr.fit(x, y)
+
+print('Intercept: \n', regr.intercept_)
+print('Coefficients: \n', regr.coef_)
+
+
+x = sm.add_constant(x) # adding a constant
+ 
+model = sm.OLS(y, x).fit()
+predictions = model.predict(x) 
+ 
+print_model = model.summary()
+print(print_model)
+plt.savefig('Multi-regression analysis.png')
